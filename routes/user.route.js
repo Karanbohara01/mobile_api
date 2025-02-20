@@ -44,6 +44,33 @@
 
 // export default router;
 
+// import express from "express";
+// import {
+//   editProfile,
+//   getAllUsers,
+//   getMe,
+//   login,
+//   register,
+//   uploadImage,
+// } from "../controllers/user.controller.js";
+// import { protect } from "../middlewares/auth.js";
+// import isAuthenticated from "../middlewares/isAuthenticated.js";
+// import upload from "../middlewares/upload.js";
+
+// const router = express.Router();
+// //"http://10.0.2.2:8000/uploads/user/uploadImage"
+
+// router.post("/uploadImage", upload, uploadImage);
+// router.post("/register", register);
+// router.post("/login", login);
+// router.get("/getMe", protect, getMe);
+// router.get("/all", getAllUsers);
+
+// // router.route("/profile/edit").post(editProfile);
+// router.post("/profile/edit", isAuthenticated, upload, editProfile);
+
+// export default router;
+
 import express from "express";
 import {
   editProfile,
@@ -57,12 +84,15 @@ import { protect } from "../middlewares/auth.js";
 import upload from "../middlewares/upload.js";
 
 const router = express.Router();
-//"http://10.0.2.2:8000/uploads/user/uploadImage"
 
+// ✅ Route definitions in your required format
 router.post("/uploadImage", upload, uploadImage);
 router.post("/register", register);
 router.post("/login", login);
 router.get("/getMe", protect, getMe);
 router.get("/all", getAllUsers);
-router.route("/profile/edit").post(editProfile);
+
+// ✅ Profile Edit Route with `upload` and `isAuthenticated`
+router.post("/profile/edit", upload, protect, editProfile);
+
 export default router;

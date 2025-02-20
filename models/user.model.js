@@ -35,7 +35,6 @@
 
 // **************************************************************************//
 
-
 // for Mobile
 
 import bcrypt from "bcryptjs";
@@ -57,6 +56,11 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+    trim: true,
+  },
+  bio: {
+    type: String,
+    required: false,
     trim: true,
   },
 });

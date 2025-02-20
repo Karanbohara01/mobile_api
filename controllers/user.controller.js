@@ -765,38 +765,41 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-export const editProfile = async (req, res) => {
+// Edit Profile
+export const editProfile = asyncHandler(async (req, res) => {
   try {
-    const userId = req.id;
+    const userId = req.user.id; // Ensure req.user is set by authentication middleware
     const { bio, gender, username, role } = req.body;
-    const profilePicture = req.file;
-    let cloudResponse;
-
-    if (profilePicture) {
-      const fileUri = getDataUri(profilePicture);
-      cloudResponse = await cloudinary.uploader.upload(fileUri);
-    }
+    const profilePicture = req.file ? req.file.filename : null; // Get uploaded file name
 
     const user = await User.findById(userId).select("-password");
+
     if (!user) {
       return res.status(404).json({
         message: "User not found.",
         success: false,
       });
     }
+
+    // Update fields if provided
     if (bio) user.bio = bio;
-    if (bio) user.username = username;
+    if (username) user.username = username;
     if (gender) user.gender = gender;
-    if (profilePicture) user.profilePicture = cloudResponse.secure_url;
+    if (role) user.role = role;
+    if (profilePicture) user.profilePicture = `/uploads/${profilePicture}`; // Set file path
 
     await user.save();
 
     return res.status(200).json({
-      message: "Profile updated.",
+      message: "Profile updated successfully.",
       success: true,
       user,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error updating profile:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
   }
-};
+});

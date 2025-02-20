@@ -99,36 +99,181 @@ import cloudinary from "../utils/cloudinary.js";
 
 //  for  mobile
 
+// export const addNewPost = async (req, res) => {
+//   try {
+//     const { caption, description, price, location, category, image } = req.body;
+//     const author = req.user ? req.user._id : null; // Assuming you have a user in `req.user` (authenticated user)
+
+//     // // Ensure image and author are provided
+//     // if (!image) {
+//     //   return res.status(400).json({ message: "Image is required" });
+//     // }
+
+//     // if (!author) {
+//     //   return res.status(400).json({ message: "Author is required" });
+//     // }
+
+//     // Proceed with adding the post
+//     const newPost = new Post({
+//       caption,
+//       description,
+//       price,
+//       location,
+//       category,
+//       image,
+//       author, // Use the ObjectId of the authenticated user
+//     });
+
+//     await newPost.save();
+//     res.status(201).json(newPost);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+// working fine for mobile
+// export const addNewPost = async (req, res) => {
+//   try {
+//     const { caption, description, price, location, category, image } = req.body;
+
+//     if (!req.user || !req.user._id) {
+//       return res
+//         .status(401)
+//         .json({ success: false, message: "User not authenticated" });
+//     }
+
+//     const author = req.user._id; // ✅ Assign authenticated user's ID as author
+
+//     // ✅ Ensure required fields are provided
+//     if (!image) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Image is required" });
+//     }
+
+//     if (!category) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Category is required" });
+//     }
+
+//     // ✅ Proceed with creating the post
+//     const newPost = new Post({
+//       caption,
+//       description,
+//       price,
+//       location,
+//       category,
+//       image,
+//       author, // ✅ Assign authenticated user
+//     });
+
+//     await newPost.save();
+//     res.status(201).json({ success: true, post: newPost });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
+// export const addNewPost = async (req, res) => {
+//   try {
+//     const { caption, description, price, location, category, image } = req.body;
+
+//     if (!req.user || !req.user._id) {
+//       return res
+//         .status(401)
+//         .json({ success: false, message: "User not authenticated" });
+//     }
+
+//     const author = req.user._id;
+
+//     // ✅ Ensure required fields are provided
+//     if (!image) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Image is required" });
+//     }
+
+//     if (!category) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Category is required" });
+//     }
+
+//     // ✅ Create the post
+//     let newPost = new Post({
+//       caption,
+//       description,
+//       price,
+//       location,
+//       category,
+//       image,
+//       author,
+//     });
+
+//     await newPost.save();
+
+//     // ✅ Populate the author and category fields properly
+//     newPost = await Post.findById(newPost._id)
+//       .populate({ path: "author", select: "name email" }) // ✅ Exclude password
+//       .populate({ path: "category", select: "name" }); // ✅ Only include category name
+
+//     res.status(201).json({ success: true, post: newPost });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
 export const addNewPost = async (req, res) => {
   try {
     const { caption, description, price, location, category, image } = req.body;
-    const author = req.user ? req.user._id : null; // Assuming you have a user in `req.user` (authenticated user)
 
-    // Ensure image and author are provided
-    // if (!image) {
-    //   return res.status(400).json({ message: "Image is required" });
-    // }
+    if (!req.user || !req.user._id) {
+      return res
+        .status(401)
+        .json({ success: false, message: "User not authenticated" });
+    }
 
-    // if (!author) {
-    //   return res.status(400).json({ message: "Author is required" });
-    // }
+    const author = req.user._id; // ✅ Assign authenticated user as author
 
-    // Proceed with adding the post
-    const newPost = new Post({
+    // ✅ Ensure required fields are provided
+    if (!image) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Image is required" });
+    }
+
+    if (!category) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Category is required" });
+    }
+
+    // ✅ Create the post
+    let newPost = new Post({
       caption,
       description,
       price,
       location,
       category,
       image,
-      author, // Use the ObjectId of the authenticated user
+      author,
     });
 
     await newPost.save();
-    res.status(201).json(newPost);
+
+    // ✅ Populate author and category before returning response
+    newPost = await Post.findById(newPost._id)
+      .populate("author", "username email image") // ✅ Populate author details
+      .populate("category", "name"); // ✅ Populate category name
+
+    res.status(201).json({ success: true, post: newPost });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -252,6 +397,7 @@ export const dislikePost = async (req, res) => {
     return res.status(200).json({ message: "Post disliked", success: true });
   } catch (error) {}
 };
+
 export const addComment = async (req, res) => {
   try {
     const postId = req.params.id;
@@ -453,5 +599,60 @@ export const updatePost = async (req, res) => {
       });
     }
     return res.status(500).json({ message, success: false });
+  }
+};
+// export const getPostById = async (req, res) => {
+//   console.log("Incoming request for post ID:", req.params.id); // ✅ Add this
+
+//   try {
+//     const post = await Post.findById(req.params.id);
+//     if (!post) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Post not found" });
+//     }
+//     res.status(200).json({ success: true, post });
+//   } catch (error) {
+//     console.error("Error fetching post:", error);
+//     res.status(500).json({ success: false, message: "Internal Server Error" });
+//   }
+// };
+
+// export const getPostById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const post = await Post.findById(id).populate("category"); // 🔥 This populates the category field
+
+//     if (!post) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Post not found" });
+//     }
+
+//     return res.status(200).json({ success: true, post });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ success: false, message: "Server Error" });
+//   }
+// };
+
+export const getPostById = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id)
+      .populate("author", "username email image")
+      .populate("category", "name");
+
+    console.log("DEBUG - Post Response:", post); // ✅ Log the output
+
+    if (!post) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+    }
+
+    res.status(200).json({ success: true, post });
+  } catch (error) {
+    console.error("DEBUG - Error Fetching Post:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

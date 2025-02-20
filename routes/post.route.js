@@ -7,13 +7,16 @@ import {
   dislikePost,
   getAllPost,
   getCommentsOfPost,
+  getPostById,
   getUserPost,
   likePost,
   updatePost,
 } from "../controllers/post.controller.js";
 import { uploadImage } from "../controllers/user.controller.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
+import isProtected from "../middlewares/isProtected.js";
 import upload from "../middlewares/multer.js";
+
 //  for web
 // import upload from "../middlewares/multer.js";
 
@@ -21,7 +24,7 @@ import upload from "../middlewares/multer.js";
 
 const router = express.Router();
 
-router.post("/addpost", addNewPost); // 'image' is the field name for the file
+router.post("/addpost", isProtected, addNewPost); // 'image' is the field name for the file
 // for mobile
 router.post("/uploadPostsImage", upload, uploadImage);
 
@@ -35,5 +38,6 @@ router.route("/:id/comment").post(isAuthenticated, addComment);
 router.route("/:id/comment/all").post(isAuthenticated, getCommentsOfPost);
 router.route("/delete/:id").delete(isAuthenticated, deletePost);
 router.route("/:id/bookmark").get(isAuthenticated, bookmarkPost);
+router.get("/:id", getPostById);
 
 export default router;
